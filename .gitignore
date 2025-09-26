@@ -1,0 +1,17 @@
+# Firebase設定ファイル（機密情報を含むため）
+firebaseConfig.js
+
+# その他の機密ファイル
+*.env
+.env.*
+
+# ログファイル
+*.log
+
+# 一時ファイル
+*.tmp
+*.temp
+
+# システムファイル
+.DS_Store
+Thumbs.db
