@@ -5,10 +5,9 @@ session_start();
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>新規登録 | 物語灯花</title>
-  <link rel="stylesheet" href="style.css">
+  <?php include 'common/head.php'; ?>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>

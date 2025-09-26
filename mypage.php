@@ -4,9 +4,8 @@ session_start();
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
   <title>マイページ | 物語灯花</title>
-  <link rel="stylesheet" href="style.css">
+  <?php include 'common/head.php'; ?>
 </head>
 <body>
 

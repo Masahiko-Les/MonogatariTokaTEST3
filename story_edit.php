@@ -5,9 +5,8 @@ $id = $_GET['id'] ?? '';
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
   <title>物語の編集 | 物語灯花</title>
-  <link rel="stylesheet" href="style.css">
+  <?php include 'common/head.php'; ?>
 </head>
 <body>
   <?php include_once 'common/header.php'; ?>

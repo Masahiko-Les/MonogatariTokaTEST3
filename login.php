@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
   <title>ログイン | 物語灯花</title>
-  <link rel="stylesheet" href="style.css">
+  <?php include 'common/head.php'; ?>
 </head>
 <body>
   <?php include 'common/header.php'; ?>

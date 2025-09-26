@@ -5,11 +5,10 @@ session_start();
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>このサイトについて | 物語灯花</title>
   <meta name="description" content="灯花（ストーリー・データベース）は、病気や困難の体験を物語として優しくつなぐ場所です。投稿や下書き保存、共感の花束など、安心して使える仕組みを用意しています。">
-  <link rel="stylesheet" href="style.css">
+  <?php include 'common/head.php'; ?>
   <link rel="stylesheet" href="css/header.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
 </head>
