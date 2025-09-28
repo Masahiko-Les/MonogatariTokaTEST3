@@ -22,6 +22,12 @@ const logoutBtn  = document.getElementById("logout-btn");
 const authMenu   = document.getElementById("auth-menu");
 const authTrigger= document.getElementById("auth-trigger");
 
+// モバイルメニュー用
+const mobileUserInfo = document.getElementById("mobile-user-info");
+const mobileLogout = document.getElementById("mobile-logout");
+const mobileLogin = document.getElementById("mobile-login");
+const mobileRegister = document.getElementById("mobile-register");
+
 window.currentUserId = null;
 
 // ====== ログイン状態の監視 ======
@@ -41,25 +47,60 @@ onAuthStateChanged(auth, async (user) => {
           ? `${nickname} さん`
           : "ゲストさん";   // ← ニックネームが未登録ならゲストさん
       }
+      
+      // モバイルメニュー用
+      if (mobileUserInfo) {
+        mobileUserInfo.textContent = nickname
+          ? `${nickname} さん`
+          : "ゲストさん";
+        mobileUserInfo.style.display = "block";
+      }
     } catch (e) {
       console.error("ユーザープロフィール取得失敗", e);
       if (userInfo) {
         userInfo.textContent = "ゲストさん";
       }
+      if (mobileUserInfo) {
+        mobileUserInfo.textContent = "ゲストさん";
+        mobileUserInfo.style.display = "block";
+      }
     }
 
     if (logoutBtn) logoutBtn.style.display = "inline-block";
     if (authMenu)  authMenu.style.display  = "none";
+    
+    // モバイルメニュー用
+    if (mobileLogout) mobileLogout.style.display = "block";
+    if (mobileLogin) mobileLogin.style.display = "none";
+    if (mobileRegister) mobileRegister.style.display = "none";
   } else {
     if (userInfo)  userInfo.textContent = "";
     if (logoutBtn) logoutBtn.style.display = "none";
     if (authMenu)  authMenu.style.display  = "inline-block";
+    
+    // モバイルメニュー用
+    if (mobileUserInfo) mobileUserInfo.style.display = "none";
+    if (mobileLogout) mobileLogout.style.display = "none";
+    if (mobileLogin) mobileLogin.style.display = "block";
+    if (mobileRegister) mobileRegister.style.display = "block";
   }
 });
 
 // ====== ログアウト ======
 if (logoutBtn) {
   logoutBtn.addEventListener("click", async () => {
+    try {
+      await signOut(auth);
+    } catch (e) {
+      console.error(e);
+      alert("ログアウトに失敗しました");
+    }
+  });
+}
+
+// モバイルメニュー用ログアウト
+if (mobileLogout) {
+  mobileLogout.addEventListener("click", async () => {
     try {
       await signOut(auth);
     } catch (e) {

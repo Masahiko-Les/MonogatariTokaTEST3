@@ -17,6 +17,11 @@
   <!-- ▼ ログイン時に表示する部分 -->
   <span id="user-info" class="user-info" style="margin-left:10px;"></span>
   <button id="logout-btn" class="logout-btn" style="display:none;">ログアウト</button>
+  
+  <!-- ハンバーガーメニューボタン -->
+  <button class="hamburger" id="hamburger" aria-label="メニュー" aria-expanded="false">
+    <i class="fa-solid fa-bars"></i>
+  </button>
 </div>
   </div>
 
@@ -39,7 +44,96 @@
   </div>
 
 </header>
+
+<!-- モバイルメニューのオーバーレイ -->
+<div class="mobile-menu-overlay" id="mobile-overlay"></div>
+
+<!-- モバイルメニュー -->
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mobile-menu-header">
+    <span class="logo">物語灯花</span>
+    <button class="mobile-menu-close" id="mobile-close">
+      <i class="fa-solid fa-times"></i>
+    </button>
+  </div>
+  <div class="mobile-menu-content">
+    <a href="list.php" class="mobile-menu-item">物語を読む</a>
+    <div class="mobile-submenu">
+      <a href="list.php" class="mobile-submenu-item">吃音</a>
+      <a href="list.php" class="mobile-submenu-item">うつ</a>
+      <a href="list.php" class="mobile-submenu-item">いじめ</a>
+      <a href="list.php" class="mobile-submenu-item">障害児の子育て</a>
+    </div>
+    <a href="post.php" class="mobile-menu-item">物語を書く</a>
+    <a href="mypage.php" class="mobile-menu-item">マイページ</a>
+    <a href="this_site.php" class="mobile-menu-item">このサイトについて</a>
+    
+    <!-- モバイル用ログインメニュー -->
+    <div id="mobile-auth-section" class="mobile-auth-section">
+      <a href="login.php" class="mobile-menu-item" id="mobile-login">ログイン</a>
+      <a href="register.php" class="mobile-menu-item" id="mobile-register">新規登録</a>
+      <div id="mobile-user-info" class="mobile-menu-item" style="display:none;"></div>
+      <button id="mobile-logout" class="mobile-menu-item" style="display:none; background:none; border:none; text-align:left; width:100%; cursor:pointer;">ログアウト</button>
+    </div>
+  </div>
+</div>
+
 <script type="module" src="auth.js"></script>
+
+<!-- ハンバーガーメニューのJS -->
+<script>
+// ハンバーガーメニューの制御
+const hamburger = document.getElementById('hamburger');
+const mobileMenu = document.getElementById('mobile-menu');
+const mobileOverlay = document.getElementById('mobile-overlay');
+const mobileClose = document.getElementById('mobile-close');
+
+// メニューを開く
+function openMobileMenu() {
+  mobileMenu.classList.add('active');
+  mobileOverlay.classList.add('active');
+  hamburger.setAttribute('aria-expanded', 'true');
+  document.body.style.overflow = 'hidden'; // スクロールを禁止
+}
+
+// メニューを閉じる
+function closeMobileMenu() {
+  mobileMenu.classList.remove('active');
+  mobileOverlay.classList.remove('active');
+  hamburger.setAttribute('aria-expanded', 'false');
+  document.body.style.overflow = ''; // スクロールを復元
+}
+
+// イベントリスナーの設定
+if (hamburger && mobileMenu) {
+  // ハンバーガーボタンクリック
+  hamburger.addEventListener('click', (e) => {
+    e.preventDefault();
+    openMobileMenu();
+  });
+
+  // 閉じるボタンクリック
+  mobileClose.addEventListener('click', closeMobileMenu);
+
+  // オーバーレイクリック
+  mobileOverlay.addEventListener('click', closeMobileMenu);
+
+  // Escキーで閉じる
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && mobileMenu.classList.contains('active')) {
+      closeMobileMenu();
+    }
+  });
+
+  // リンククリック時にメニューを閉じる
+  const mobileMenuItems = document.querySelectorAll('.mobile-menu-item, .mobile-submenu-item');
+  mobileMenuItems.forEach(item => {
+    item.addEventListener('click', () => {
+      closeMobileMenu();
+    });
+  });
+}
+</script>
 
 <!-- プルダウンのJS -->
 <script>
