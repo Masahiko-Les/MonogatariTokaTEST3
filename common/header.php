@@ -313,4 +313,35 @@ header{
   opacity:1; transform:translateY(0); pointer-events:auto;
 }
 
+/* スマホ対応の調整 */
+@media screen and (max-width: 768px) {
+  .header-top {
+    padding: 0.5rem 1rem;
+  }
+  
+  .logo {
+    font-size: 1.4rem;
+  }
+  
+  .nav-buttons {
+    gap: 0.5rem;
+  }
+  
+  .nav-buttons .auth-dropdown .menu-link.btn-like {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    white-space: nowrap;
+  }
+  
+  .user-info {
+    font-size: 0.8rem;
+    white-space: nowrap;
+    margin-right: 0.3rem;
+  }
+  
+  .hamburger {
+    margin-left: 0.5rem;
+  }
+}
+
 </style>
