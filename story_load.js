@@ -66,12 +66,36 @@ async function getNicknameByUid(uid) {
 async function renderStories(currentUser) {
   storyList.innerHTML = "";
 
-  const q = query(
-    collection(db, "stories"),
-    where("status", "==", "published"),
-    orderBy("timestamp", "desc")
-  );
+  // URLパラメータからカテゴリーを取得
+  const urlParams = new URLSearchParams(window.location.search);
+  const category = urlParams.get('category');
+
+  let q;
+  if (category) {
+    // カテゴリーが指定されている場合はフィルタリング
+    q = query(
+      collection(db, "stories"),
+      where("status", "==", "published"),
+      where("genre", "==", category),
+      orderBy("timestamp", "desc")
+    );
+  } else {
+    // カテゴリーが指定されていない場合は全て表示
+    q = query(
+      collection(db, "stories"),
+      where("status", "==", "published"),
+      orderBy("timestamp", "desc")
+    );
+  }
+
   const qs = await getDocs(q);
+
+  if (qs.empty) {
+    storyList.innerHTML = `<p style="text-align: center; color: #666; padding: 2rem;">
+      ${category ? `「${category}」のストーリーはまだありません。` : 'ストーリーがまだありません。'}
+    </p>`;
+    return;
+  }
 
   for (const docSnap of qs.docs) {
     const data = docSnap.data();
