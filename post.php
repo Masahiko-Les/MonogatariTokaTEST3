@@ -128,6 +128,18 @@ session_start();
     </section>
   </main>
 
-  <script type="module" src="post.js"></script>
+  <!-- 成功モーダル -->
+  <div id="success-modal" class="success-modal">
+    <div class="success-modal-content">
+      <div class="success-icon">✅</div>
+      <h3>公開しました！</h3>
+      <p>あなたのストーリーが正常に公開されました。<br>トップページでご確認いただけます。</p>
+      <button id="success-modal-button" class="success-modal-button">
+        トップページへ
+      </button>
+    </div>
+  </div>
+
+  <script type="module" src="post.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>

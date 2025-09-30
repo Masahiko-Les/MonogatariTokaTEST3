@@ -30,10 +30,11 @@
     <div class="menu-item has-dropdown">
       <a href="list.php" class="menu-link" aria-haspopup="true" aria-expanded="false">物語を読む</a>
         <div class="dropdown" role="menu">
-          <a href="list.php" class="dropdown-link">吃音</a>
-          <a href="list.php" class="dropdown-link">うつ</a>
-          <a href="list.php" class="dropdown-link">いじめ</a>
-          <a href="list.php" class="dropdown-link">障害児の子育て</a>
+          <a href="list.php" class="dropdown-link">すべて</a>
+          <a href="list.php?category=吃音" class="dropdown-link">吃音</a>
+          <a href="list.php?category=うつ" class="dropdown-link">うつ</a>
+          <a href="list.php?category=いじめ" class="dropdown-link">いじめ</a>
+          <a href="list.php?category=障害児の子育て" class="dropdown-link">障害児の子育て</a>
         </div>
     </div>
 
@@ -59,10 +60,11 @@
   <div class="mobile-menu-content">
     <a href="list.php" class="mobile-menu-item">物語を読む</a>
     <div class="mobile-submenu">
-      <a href="list.php" class="mobile-submenu-item">吃音</a>
-      <a href="list.php" class="mobile-submenu-item">うつ</a>
-      <a href="list.php" class="mobile-submenu-item">いじめ</a>
-      <a href="list.php" class="mobile-submenu-item">障害児の子育て</a>
+      <a href="list.php" class="mobile-submenu-item">すべて</a>
+      <a href="list.php?category=吃音" class="mobile-submenu-item">吃音</a>
+      <a href="list.php?category=うつ" class="mobile-submenu-item">うつ</a>
+      <a href="list.php?category=いじめ" class="mobile-submenu-item">いじめ</a>
+      <a href="list.php?category=障害児の子育て" class="mobile-submenu-item">障害児の子育て</a>
     </div>
     <a href="post.php" class="mobile-menu-item">物語を書く</a>
     <a href="mypage.php" class="mobile-menu-item">マイページ</a>

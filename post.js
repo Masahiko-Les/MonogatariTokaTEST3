@@ -50,6 +50,55 @@ function buildSummary(s1, s2, s3, maxLen = 200) {
   return joined.slice(0, maxLen);
 }
 
+// 成功モーダルを表示する関数
+function showSuccessModal() {
+  console.log("showSuccessModal called"); // デバッグ用
+  
+  // 既存のモーダルを削除（重複防止）
+  const existingModal = document.getElementById("success-modal");
+  if (existingModal) {
+    existingModal.remove();
+  }
+  
+  // モーダルHTMLを動的に作成
+  const modalHTML = `
+    <div id="success-modal" class="success-modal show">
+      <div class="success-modal-content">
+        <div class="success-icon">✅</div>
+        <h3>公開しました！</h3>
+        <p>あなたのストーリーが正常に公開されました。<br>トップページでご確認いただけます。</p>
+        <button id="success-modal-button" class="success-modal-button">
+          トップページへ
+        </button>
+      </div>
+    </div>
+  `;
+  
+  // bodyに追加
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+  
+  // イベントリスナーを設定
+  const modal = document.getElementById("success-modal");
+  const button = document.getElementById("success-modal-button");
+  
+  if (button) {
+    button.addEventListener("click", () => {
+      window.location.href = "index.php";
+    });
+  }
+  
+  // モーダル背景クリックで閉じる
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        window.location.href = "index.php";
+      }
+    });
+  }
+  
+  console.log("Modal created and displayed"); // デバッグ用
+}
+
 async function saveStory({status}) {
   const genre    = document.getElementById("genre")?.value || "";
   const title    = trim(document.getElementById("title")?.value);
@@ -100,8 +149,8 @@ async function saveStory({status}) {
       statusEl.style.color = "green";
       statusEl.textContent = "下書きを保存しました。";
     } else {
-      alert("公開しました。");
-      window.location.href = "index.php";
+      // モーダルを表示
+      showSuccessModal();
     }
   } catch (err) {
     console.error(err);
