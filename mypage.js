@@ -37,7 +37,23 @@ function renderMyStoryCard(docSnap, nickname) {
   const data = docSnap.data();
   const storyId = docSnap.id;
   
-  const status = data.status === "published" ? "公開" : "下書き";
+  // ステータス表示を詳細化
+  let status, statusClass;
+  switch(data.status) {
+    case "published":
+      status = "公開済み";
+      statusClass = "published";
+      break;
+    case "pending":
+      status = "承認待ち";
+      statusClass = "pending";
+      break;
+    case "draft":
+    default:
+      status = "下書き";
+      statusClass = "draft";
+      break;
+  }
   
   // story_card.js の統一カードを使用
   const storyCard = createStoryCard(docSnap, {
@@ -52,7 +68,7 @@ function renderMyStoryCard(docSnap, nickname) {
   wrap.innerHTML = `
     <div class="story-admin-panel">
       <div class="admin-card">
-        <span class="status-badge ${status === "公開" ? "published" : "draft"}">${status}</span>
+        <span class="status-badge ${statusClass}">${status}</span>
         <span class="ver-label">版:</span>
         <select class="ver-select">
           <option>${data.currentVersion || 1}</option>

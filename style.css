@@ -239,6 +239,11 @@ a {
   background: #fbefef;
   border: 1px solid #f3d0d0;
 }
+.status-badge.pending {
+  color: #b8860b;
+  background: #fff8dc;
+  border: 1px solid #f0e68c;
+}
 
 /* 版プルダウンとボタン */
 .ver-label {

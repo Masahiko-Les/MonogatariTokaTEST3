@@ -51,8 +51,8 @@ function buildSummary(s1, s2, s3, maxLen = 200) {
 }
 
 // 成功モーダルを表示する関数
-function showSuccessModal() {
-  console.log("showSuccessModal called"); // デバッグ用
+function showSuccessModal(type = "pending") {
+  console.log("showSuccessModal called with type:", type); // デバッグ用
   
   // 既存のモーダルを削除（重複防止）
   const existingModal = document.getElementById("success-modal");
@@ -60,13 +60,23 @@ function showSuccessModal() {
     existingModal.remove();
   }
   
+  // メッセージをタイプに応じて変更
+  let title, message;
+  if (type === "pending") {
+    title = "投稿しました！";
+    message = "あなたのストーリーを受け付けました。<br>管理者による確認後、サイトに公開されます。";
+  } else {
+    title = "公開しました！";
+    message = "あなたのストーリーが正常に公開されました。<br>トップページでご確認いただけます。";
+  }
+  
   // モーダルHTMLを動的に作成
   const modalHTML = `
     <div id="success-modal" class="success-modal show">
       <div class="success-modal-content">
         <div class="success-icon">✅</div>
-        <h3>公開しました！</h3>
-        <p>あなたのストーリーが正常に公開されました。<br>トップページでご確認いただけます。</p>
+        <h3>${title}</h3>
+        <p>${message}</p>
         <button id="success-modal-button" class="success-modal-button">
           トップページへ
         </button>
@@ -148,9 +158,12 @@ async function saveStory({status}) {
     if (status === "draft") {
       statusEl.style.color = "green";
       statusEl.textContent = "下書きを保存しました。";
+    } else if (status === "pending") {
+      // モーダルを表示（承認待ち用メッセージに変更）
+      showSuccessModal("pending");
     } else {
-      // モーダルを表示
-      showSuccessModal();
+      // 直接公開の場合（管理者など）
+      showSuccessModal("published");
     }
   } catch (err) {
     console.error(err);
@@ -238,7 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // プレビュー → 公開する
   if (publishBtn) {
     publishBtn.addEventListener("click", async () => {
-      await saveStory({ status: "published" });
+      await saveStory({ status: "pending" }); // published → pending に変更
     });
   }
 

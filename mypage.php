@@ -30,7 +30,7 @@ session_start();
 </main>
 
 <?php include 'common/footer.php'; ?>
-<script type="module" src="mypage.js?v=20250916c"></script>
+<script type="module" src="mypage.js?v=<?php echo time(); ?>"></script>
 
 </body>
 </html>
