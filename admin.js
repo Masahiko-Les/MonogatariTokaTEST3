@@ -90,7 +90,7 @@ function createPendingStoryCard(storyId, data, nickname) {
     
     <h3>${data.title || "無題"}</h3>
     
-    <div class="story-content">${data.story || data.summary || "内容なし"}</div>
+    <div class="story-content">${buildStoryContent(data) || "内容なし"}</div>
     
     <div class="admin-actions">
       <button class="approve-btn" onclick="approveStory('${storyId}')">
@@ -103,6 +103,15 @@ function createPendingStoryCard(storyId, data, nickname) {
   `;
   
   return card;
+}
+
+// ストーリー内容を動的に生成
+function buildStoryContent(data) {
+  if (data.section1 && data.section2 && data.section3) {
+    return `${data.section1}\n\n${data.section2}\n\n${data.section3}`;
+  }
+  // フォールバック: 古いデータ形式対応
+  return data.story || data.summary || "";
 }
 
 // ストーリーを承認

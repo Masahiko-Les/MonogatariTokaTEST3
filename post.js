@@ -135,7 +135,7 @@ async function saveStory({status}) {
       uid: user.uid,
       title,
       summary,
-      story,
+      // story フィールドを削除（section1,2,3から動的に生成）
 
       // 新仕様
       genre,                // ← プルダウンのジャンル
