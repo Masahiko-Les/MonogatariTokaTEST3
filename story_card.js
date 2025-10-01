@@ -12,7 +12,7 @@ export function createStoryCard(docSnap, options = {}) {
     bouquetCount = data.bouquets || 0 // マイページで反映されるように追加
   } = options;
 
-  const section1 = data.section1 || data.summary || "";
+  const section1 = data.section1 || "";
   let section1Preview = section1.slice(0, 100);
   if (section1.length > 100) section1Preview += "…";
 

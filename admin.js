@@ -111,7 +111,7 @@ function buildStoryContent(data) {
     return `${data.section1}\n\n${data.section2}\n\n${data.section3}`;
   }
   // フォールバック: 古いデータ形式対応
-  return data.story || data.summary || "";
+  return data.story || "";
 }
 
 // ストーリーを承認

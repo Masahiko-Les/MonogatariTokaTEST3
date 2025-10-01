@@ -45,11 +45,6 @@ function buildStory(s1, s2, s3) {
          `${trim(s3)}`;
 }
 
-function buildSummary(s1, s2, s3, maxLen = 200) {
-  const joined = `${trim(s1)} ${trim(s2)} ${trim(s3)}`;
-  return joined.slice(0, maxLen);
-}
-
 // 成功モーダルを表示する関数
 function showSuccessModal(type = "pending") {
   console.log("showSuccessModal called with type:", type); // デバッグ用
@@ -127,15 +122,13 @@ async function saveStory({status}) {
   if (!user) { alert("ログインしてください。"); return; }
 
   const story   = buildStory(section1, section2, section3);
-  const summary = buildSummary(section1, section2, section3);
 
   try {
     await addDoc(collection(db, "stories"), {
       // 既存の一覧互換用フィールド
       uid: user.uid,
       title,
-      summary,
-      // story フィールドを削除（section1,2,3から動的に生成）
+      // summary フィールドを削除（section1から動的に表示）
 
       // 新仕様
       genre,                // ← プルダウンのジャンル
