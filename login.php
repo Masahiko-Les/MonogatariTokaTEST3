@@ -21,6 +21,9 @@
     
     <div id="auth-status"></div><!-- ログイン成功の表示 -->
 
+    <div class="forgot-password">
+      <a href="#" id="forgot-password-link" class="forgot-link">パスワードを忘れた方はこちら</a>
+    </div>
 
   <a href="register.php" class="inline-link">
     <span class="only-underline">新規アカウント作成</span>
@@ -123,5 +126,23 @@
 
 .inline-link .only-underline:hover {
     color: #333 !important;
+}
+
+.forgot-password {
+    text-align: center;
+    margin: 15px 0;
+}
+
+.forgot-link {
+    color: #666;
+    text-decoration: none;
+    font-size: 14px;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+    text-decoration-thickness: 1px;
+}
+
+.forgot-link:hover {
+    color: #333;
 }
 </style>

@@ -4,7 +4,8 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
-  signOut
+  signOut,
+  sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
 import {
   doc,
@@ -231,6 +232,48 @@ if (authMenu && authTrigger) {
     if (e.key === "Escape") {
       authMenu.classList.remove("open");
       authTrigger.setAttribute("aria-expanded", "false");
+    }
+  });
+}
+
+// ====== パスワードリセット（login.php用） ======
+const forgotPasswordLink = document.getElementById("forgot-password-link");
+if (forgotPasswordLink) {
+  forgotPasswordLink.addEventListener("click", async (e) => {
+    e.preventDefault();
+    
+    const email = document.getElementById("email")?.value ?? "";
+    
+    if (!email) {
+      document.getElementById("auth-status").textContent = "メールアドレスを入力してください";
+      document.getElementById("auth-status").style.color = "#e74c3c";
+      return;
+    }
+    
+    try {
+      // パスワードリセットメールの設定
+      const actionCodeSettings = {
+        url: 'http://localhost/gs_code/StoryDatabase/f_ver1/login.php', // リセット後のリダイレクト先
+        handleCodeInApp: false
+      };
+      
+      await sendPasswordResetEmail(auth, email, actionCodeSettings);
+      document.getElementById("auth-status").textContent = "パスワードリセットメールを送信しました。メールボックスをご確認ください。";
+      document.getElementById("auth-status").style.color = "#27ae60";
+    } catch (e) {
+      console.error(e);
+      let errorMessage = "パスワードリセットメールの送信に失敗しました";
+      
+      if (e.code === "auth/user-not-found") {
+        errorMessage = "このメールアドレスは登録されていません";
+      } else if (e.code === "auth/invalid-email") {
+        errorMessage = "有効なメールアドレスを入力してください";
+      } else if (e.code === "auth/too-many-requests") {
+        errorMessage = "リクエストが多すぎます。しばらく待ってから再試行してください";
+      }
+      
+      document.getElementById("auth-status").textContent = errorMessage;
+      document.getElementById("auth-status").style.color = "#e74c3c";
     }
   });
 }
