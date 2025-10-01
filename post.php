@@ -141,5 +141,169 @@ session_start();
   </div>
 
   <script type="module" src="post.js?v=<?php echo time(); ?>"></script>
+
+  <style>
+  /* モデレーション警告モーダル */
+  .moderation-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .moderation-modal.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .moderation-modal-content {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transform: scale(0.8);
+    transition: transform 0.3s ease;
+    text-align: center;
+  }
+
+  .moderation-modal.show .moderation-modal-content {
+    transform: scale(1);
+  }
+
+  .warning-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  .moderation-modal h3 {
+    margin: 0 0 1rem 0;
+    color: #e74c3c;
+    font-size: 1.4rem;
+  }
+
+  .moderation-modal p {
+    margin: 0 0 1rem 0;
+    line-height: 1.6;
+    color: #555;
+    text-align: left;
+  }
+
+  .moderation-modal ul {
+    text-align: left;
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+    color: #666;
+  }
+
+  .moderation-modal li {
+    margin-bottom: 0.5rem;
+  }
+
+  .moderation-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+
+  .edit-button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+  }
+
+  .edit-button:hover {
+    background-color: #2980b9;
+  }
+
+  /* 成功モーダル */
+  .success-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .success-modal.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .success-modal-content {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transform: scale(0.8);
+    transition: transform 0.3s ease;
+  }
+
+  .success-modal.show .success-modal-content {
+    transform: scale(1);
+  }
+
+  .success-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  .success-modal h3 {
+    margin: 0 0 1rem 0;
+    color: #27ae60;
+    font-size: 1.3rem;
+  }
+
+  .success-modal p {
+    margin: 0 0 1.5rem 0;
+    line-height: 1.6;
+    color: #555;
+  }
+
+  .success-modal-button {
+    background-color: #333;
+    color: white;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+  }
+
+  .success-modal-button:hover {
+    background-color: #555;
+  }
+  </style>
 </body>
 </html>

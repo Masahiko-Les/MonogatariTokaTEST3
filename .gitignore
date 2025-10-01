@@ -1,17 +1,38 @@
 # Firebase設定ファイル（機密情報を含むため）
 firebaseConfig.js
 
-# その他の機密ファイル
+# API設定ファイル（APIキーを含むため）
+API_config.php
+
+# Firestore ルールファイル（機密情報の可能性があるため）
+firestore_rules_updated.txt
+
+# 環境設定ファイル
 *.env
 .env.*
 
 # ログファイル
 *.log
+error.log
 
 # 一時ファイル
 *.tmp
 *.temp
+*.bak
+
+# デバッグファイル
+debug.log
 
 # システムファイル
 .DS_Store
 Thumbs.db
+
+# IDE設定ファイル
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# PHP Composer
+vendor/
+composer.lock

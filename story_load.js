@@ -116,6 +116,11 @@ async function renderStories(currentUser) {
           countEl.textContent = String(newCount);
           btnEl.textContent = newCount > 0 ? "🌸" : "🌱";
         }
+        
+        // 花を贈った場合（delta > 0）にモーダルを表示
+        if (delta > 0) {
+          showThankYouModal(nickname);
+        }
       }
     });
 
@@ -125,4 +130,68 @@ async function renderStories(currentUser) {
 
 onAuthStateChanged(auth, (user) => {
   renderStories(user);
+});
+
+// モーダル表示関数
+function showThankYouModal(authorName) {
+  // モーダルHTMLを作成
+  const modalHTML = `
+    <div class="modal-overlay" id="thankYouModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>🌸 花を贈りました</h3>
+        </div>
+        <div class="modal-body">
+          <p>花を贈ってくれてありがとう。</p>
+          <p>自分の苦しみの物語を書いてくれた<strong>${escapeHTML(authorName)}</strong>さんもきっと喜んでくれます。</p>
+        </div>
+        <div class="modal-footer">
+          <button class="modal-close-btn" onclick="closeThankYouModal()">閉じる</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // モーダルをbodyに追加
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+  // モーダルを表示
+  setTimeout(() => {
+    document.getElementById('thankYouModal').classList.add('show');
+  }, 10);
+}
+
+// モーダルを閉じる関数
+window.closeThankYouModal = function() {
+  const modal = document.getElementById('thankYouModal');
+  if (modal) {
+    modal.classList.remove('show');
+    setTimeout(() => {
+      modal.remove();
+    }, 300);
+  }
+}
+
+// HTMLエスケープ関数
+function escapeHTML(str) {
+  return String(str || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+// オーバーレイクリックでモーダルを閉じる
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('modal-overlay')) {
+    closeThankYouModal();
+  }
+});
+
+// Escキーでモーダルを閉じる
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeThankYouModal();
+  }
 });
