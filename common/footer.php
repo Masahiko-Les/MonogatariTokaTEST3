@@ -52,6 +52,12 @@
     </div>
 
     <div class="footer-bottom">
+        <!-- 追悼メッセージ -->
+        <div class="dedication">
+            <img src="img/kasumisou_transparent.png" alt="霞草" class="kasumisou-icon">
+            <p class="dedication-text">このWebアプリは、17年間闘病生活を送り、2025年7月に亡くなった母親に捧げます</p>
+        </div>
+        
         <p>&copy; 2025 物語灯花/icon by <a href="https://icons8.jp/">icon8</a></p>
     </div>
 </footer>
@@ -130,14 +136,40 @@
 
 .footer-bottom {
     text-align: center;
-    margin-top: 30px;
-    padding-top: 20px;
+    margin-top: 10px;
+    padding-top: 10px;
 }
 
 .footer-bottom p {
     margin: 0;
     color: #666;
     font-size: 14px;
+}
+
+/* 追悼メッセージスタイル */
+.dedication {
+    padding: 0px 0px 10px 20px;
+    margin: 0 auto;
+    max-width: 800px;
+}
+
+.kasumisou-icon {
+    width: 240px;
+    height: 240px;
+    margin-bottom: 1px;
+    opacity: 0.9;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    background: transparent;
+    object-fit: contain;
+}
+
+.dedication-text {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+    font-weight: normal;
+    letter-spacing: normal;
 }
 
 /* フッターカラム内のソーシャルアイコン用 */
@@ -175,6 +207,20 @@
     
     .footer-column h3 {
         font-size: 16px;
+    }
+    
+    .dedication {
+        margin: 0 20px 20px 20px;
+        padding: 20px 15px;
+    }
+    
+    .dedication-text {
+        font-size: 15px;
+    }
+    
+    .kasumisou-icon {
+        width: 150px;
+        height: 150px;
     }
 }
 </style>

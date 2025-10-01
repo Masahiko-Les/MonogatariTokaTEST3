@@ -36,8 +36,113 @@ async function getNicknameByUid(uid) {
   }
 }
 
+// 版数履歴を取得
+async function getVersionHistory(storyId) {
+  try {
+    const versionsRef = collection(db, "stories", storyId, "versions");
+    const q = query(versionsRef, orderBy("version", "desc"));
+    const snapshot = await getDocs(q);
+    
+    const versions = [];
+    snapshot.forEach(doc => {
+      versions.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    
+    return versions;
+  } catch (error) {
+    console.error("版数履歴取得エラー:", error);
+    return [];
+  }
+}
+
+// 日時フォーマット関数
+function formatDate(date) {
+  if (!date) return "不明";
+  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+}
+
+// 過去版のプレビューを表示
+async function showVersionPreview(storyId, versionNumber, wrapElement) {
+  try {
+    const versionRef = doc(db, "stories", storyId, "versions", String(versionNumber));
+    const versionSnap = await getDoc(versionRef);
+    
+    if (!versionSnap.exists()) {
+      alert("この版のデータが見つかりません。");
+      return;
+    }
+    
+    const versionData = versionSnap.data();
+    
+    // 既存のストーリーカードを非表示にして、版プレビューを表示
+    const storyCard = wrapElement.querySelector('.story-card');
+    if (storyCard) {
+      storyCard.style.display = 'none';
+    }
+    
+    // 版プレビューを作成
+    let versionPreview = wrapElement.querySelector('.version-preview');
+    if (!versionPreview) {
+      versionPreview = document.createElement('div');
+      versionPreview.className = 'version-preview';
+      wrapElement.appendChild(versionPreview);
+    }
+    
+    const versionDate = versionData.savedAt?.toDate() || versionData.createdAt?.toDate() || new Date();
+    
+    versionPreview.innerHTML = `
+      <div class="version-card">
+        <div class="version-header">
+          <h3>📖 版数 ${versionData.version} のプレビュー</h3>
+          <p class="version-date">保存日時: ${formatDate(versionDate)}</p>
+          <button class="btn close-preview">現在の版に戻る</button>
+        </div>
+        <div class="version-content">
+          <h4>${versionData.title}</h4>
+          <div class="version-sections">
+            <div class="section">
+              <h5>第1章</h5>
+              <p>${versionData.section1}</p>
+            </div>
+            <div class="section">
+              <h5>第2章</h5>
+              <p>${versionData.section2}</p>
+            </div>
+            <div class="section">
+              <h5>第3章</h5>
+              <p>${versionData.section3}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // 「現在の版に戻る」ボタンのイベント
+    versionPreview.querySelector('.close-preview')?.addEventListener('click', () => {
+      versionPreview.style.display = 'none';
+      if (storyCard) {
+        storyCard.style.display = 'block';
+      }
+      // プルダウンを現在の版に戻す
+      const versionSelect = wrapElement.querySelector('.ver-select');
+      if (versionSelect) {
+        versionSelect.value = 'current';
+      }
+    });
+    
+    versionPreview.style.display = 'block';
+    
+  } catch (error) {
+    console.error("版プレビュー表示エラー:", error);
+    alert("版の表示でエラーが発生しました。");
+  }
+}
+
 // カードUI（管理パネル付き）
-function renderMyStoryCard(docSnap, nickname) {
+async function renderMyStoryCard(docSnap, nickname) {
   const data = docSnap.data();
   const storyId = docSnap.id;
   
@@ -66,16 +171,33 @@ function renderMyStoryCard(docSnap, nickname) {
     isMyPage: true
   });
 
+  // 版数履歴を取得
+  const versions = await getVersionHistory(storyId);
+  
   // 管理パネルを追加
   const wrap = document.createElement("div");
   wrap.className = "my-story-group";
+  
+  // 版数プルダウンのオプションを生成
+  let versionOptions = '';
+  
+  // 現在の版を追加
+  const currentDate = data.updatedAt?.toDate() || data.timestamp?.toDate() || new Date();
+  versionOptions += `<option value="current">版数：${data.currentVersion || 1} (${formatDate(currentDate)})</option>`;
+  
+  // 過去の版を追加
+  for (const version of versions) {
+    const versionDate = version.savedAt?.toDate() || version.createdAt?.toDate() || new Date();
+    versionOptions += `<option value="${version.version}">版数：${version.version} (${formatDate(versionDate)})</option>`;
+  }
+  
   wrap.innerHTML = `
     <div class="story-admin-panel">
       <div class="admin-card">
         <span class="status-badge ${statusClass}">${status}</span>
         <span class="ver-label">版:</span>
-        <select class="ver-select">
-          <option>${data.currentVersion || 1}</option>
+        <select class="ver-select" data-story-id="${storyId}">
+          ${versionOptions}
         </select>
         <div class="admin-actions">
           <button class="btn edit-btn" data-id="${storyId}">編集</button>
@@ -87,6 +209,25 @@ function renderMyStoryCard(docSnap, nickname) {
   
   // ストーリーカードを追加
   wrap.appendChild(storyCard);
+
+  // 版数変更イベント
+  wrap.querySelector(".ver-select")?.addEventListener("change", async (e) => {
+    const selectedVersion = e.target.value;
+    if (selectedVersion === "current") {
+      // 現在の版を表示（プレビューを非表示にする）
+      const versionPreview = wrap.querySelector('.version-preview');
+      if (versionPreview) {
+        versionPreview.style.display = 'none';
+      }
+      if (storyCard) {
+        storyCard.style.display = 'block';
+      }
+      return;
+    }
+    
+    // 過去の版を表示
+    await showVersionPreview(storyId, selectedVersion, wrap);
+  });
 
   // 編集
   wrap.querySelector(".edit-btn")?.addEventListener("click", () => {
@@ -128,7 +269,8 @@ async function renderMyStories() {
   for (const docSnap of qs.docs) {
     const data = docSnap.data();
     const nickname = await getNicknameByUid(data.uid);
-    storyList.appendChild(renderMyStoryCard(docSnap, nickname));
+    const storyCard = await renderMyStoryCard(docSnap, nickname);
+    storyList.appendChild(storyCard);
   }
 }
 

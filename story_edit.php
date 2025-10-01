@@ -53,7 +53,7 @@ $id = $_GET['id'] ?? '';
   <script type="module">
     import { auth, db } from "./auth.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
-    import { doc, getDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+    import { doc, getDoc, updateDoc, deleteDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
     const storyId = document.getElementById("story-id").value;
     const form = document.getElementById("edit-form");
@@ -85,9 +85,55 @@ $id = $_GET['id'] ?? '';
         alert("ログインしてください");
         return;
       }
+      
+      statusEl.style.color = "blue";
+      statusEl.textContent = "更新中...";
+      
       try {
+        console.log("現在のユーザー:", user.uid);
+        
         const storyRef = doc(db, "stories", storyId);
         const snap = await getDoc(storyRef);
+        
+        if (!snap.exists()) {
+          throw new Error("ストーリーが見つかりません");
+        }
+        
+        const currentData = snap.data();
+        console.log("現在のデータ:", currentData);
+        
+        // ユーザー権限チェック
+        if (currentData.uid !== user.uid) {
+          throw new Error("編集権限がありません");
+        }
+        
+        const currentVersion = currentData.currentVersion || 1;
+        const newVersion = currentVersion + 1;
+        
+        console.log("版数保存開始:", currentVersion);
+        
+        // 一時的にサブコレクション保存をスキップしてテスト
+        try {
+          const versionRef = doc(db, "stories", storyId, "versions", String(currentVersion));
+          await setDoc(versionRef, {
+            version: currentVersion,
+            title: currentData.title,
+            section1: currentData.section1,
+            section2: currentData.section2,
+            section3: currentData.section3,
+            status: currentData.status,
+            savedAt: currentData.updatedAt || currentData.timestamp || serverTimestamp(),
+            createdAt: serverTimestamp()
+          });
+          console.log("版数保存完了");
+        } catch (versionError) {
+          console.warn("版数保存でエラー（スキップして続行）:", versionError);
+          // 版数保存に失敗してもメイン更新は続行
+        }
+        
+        console.log("版数保存完了, メイン更新開始");
+        
+        // メインストーリーを新しい版で更新
         await updateDoc(storyRef, {
           title: document.getElementById("title").value.trim(),
           section1: document.getElementById("section1").value.trim(),
@@ -95,14 +141,16 @@ $id = $_GET['id'] ?? '';
           section3: document.getElementById("section3").value.trim(),
           status: document.getElementById("status").value,
           updatedAt: serverTimestamp(),
-          currentVersion: (snap.data().currentVersion || 1) + 1
+          currentVersion: newVersion
         });
+        
+        console.log("更新完了");
         statusEl.style.color = "green";
-        statusEl.textContent = "更新しました。";
+        statusEl.textContent = `更新しました。版数: ${newVersion}`;
       } catch (err) {
-        console.error(err);
+        console.error("詳細エラー:", err);
         statusEl.style.color = "red";
-        statusEl.textContent = "更新に失敗しました。";
+        statusEl.textContent = `更新に失敗しました: ${err.message}`;
       }
     }
 
