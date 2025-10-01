@@ -56,13 +56,19 @@ function showSuccessModal(type = "pending") {
   }
   
   // メッセージをタイプに応じて変更
-  let title, message;
+  let title, message, buttonText;
   if (type === "pending") {
     title = "投稿しました！";
     message = "あなたのストーリーを受け付けました。<br>管理者による確認後、サイトに公開されます。";
+    buttonText = "マイページへ";
+  } else if (type === "draft") {
+    title = "下書き保存しました！";
+    message = "あなたのストーリーを下書きとして保存しました。<br>マイページで確認・編集できます。";
+    buttonText = "マイページへ";
   } else {
     title = "公開しました！";
     message = "あなたのストーリーが正常に公開されました。<br>トップページでご確認いただけます。";
+    buttonText = "トップページへ";
   }
   
   // モーダルHTMLを動的に作成
@@ -73,7 +79,7 @@ function showSuccessModal(type = "pending") {
         <h3>${title}</h3>
         <p>${message}</p>
         <button id="success-modal-button" class="success-modal-button">
-          トップページへ
+          ${buttonText}
         </button>
       </div>
     </div>
@@ -86,9 +92,12 @@ function showSuccessModal(type = "pending") {
   const modal = document.getElementById("success-modal");
   const button = document.getElementById("success-modal-button");
   
+  // 遷移先を決定
+  const redirectUrl = (type === "draft" || type === "pending") ? "mypage.php" : "index.php";
+  
   if (button) {
     button.addEventListener("click", () => {
-      window.location.href = "index.php";
+      window.location.href = redirectUrl;
     });
   }
   
@@ -96,7 +105,7 @@ function showSuccessModal(type = "pending") {
   if (modal) {
     modal.addEventListener("click", (e) => {
       if (e.target === modal) {
-        window.location.href = "index.php";
+        window.location.href = redirectUrl;
       }
     });
   }
@@ -149,8 +158,8 @@ async function saveStory({status}) {
     });
 
     if (status === "draft") {
-      statusEl.style.color = "green";
-      statusEl.textContent = "下書きを保存しました。";
+      // 下書き保存用のモーダルを表示
+      showSuccessModal("draft");
     } else if (status === "pending") {
       // モーダルを表示（承認待ち用メッセージに変更）
       showSuccessModal("pending");

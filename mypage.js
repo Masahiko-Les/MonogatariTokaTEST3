@@ -104,15 +104,12 @@ async function showVersionPreview(storyId, versionNumber, wrapElement) {
           <h4>${versionData.title}</h4>
           <div class="version-sections">
             <div class="section">
-              <h5>第1章</h5>
               <p>${versionData.section1}</p>
             </div>
             <div class="section">
-              <h5>第2章</h5>
               <p>${versionData.section2}</p>
             </div>
             <div class="section">
-              <h5>第3章</h5>
               <p>${versionData.section3}</p>
             </div>
           </div>
@@ -183,12 +180,12 @@ async function renderMyStoryCard(docSnap, nickname) {
   
   // 現在の版を追加
   const currentDate = data.updatedAt?.toDate() || data.timestamp?.toDate() || new Date();
-  versionOptions += `<option value="current">版数：${data.currentVersion || 1} (${formatDate(currentDate)})</option>`;
+  versionOptions += `<option value="current">${data.currentVersion || 1} (${formatDate(currentDate)})</option>`;
   
   // 過去の版を追加
   for (const version of versions) {
     const versionDate = version.savedAt?.toDate() || version.createdAt?.toDate() || new Date();
-    versionOptions += `<option value="${version.version}">版数：${version.version} (${formatDate(versionDate)})</option>`;
+    versionOptions += `<option value="${version.version}">${version.version} (${formatDate(versionDate)})</option>`;
   }
   
   wrap.innerHTML = `
