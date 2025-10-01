@@ -42,6 +42,7 @@
     <a href="post.php"  class="menu-link">物語を書く</a>
     <a href="mypage.php" class="menu-link">マイページ</a>
     <a href="this_site.php" class="menu-link">このサイトについて</a>
+    <a href="Admin_page.php" class="menu-link admin-only" id="admin-menu-desktop" style="display:none;">管理ページ</a>
   </div>
 
 </header>
@@ -69,6 +70,7 @@
     <a href="post.php" class="mobile-menu-item">物語を書く</a>
     <a href="mypage.php" class="mobile-menu-item">マイページ</a>
     <a href="this_site.php" class="mobile-menu-item">このサイトについて</a>
+    <a href="Admin_page.php" class="mobile-menu-item admin-only" id="admin-menu-mobile" style="display:none;">管理ページ</a>
     
     <!-- モバイル用ログインメニュー -->
     <div id="mobile-auth-section" class="mobile-auth-section">

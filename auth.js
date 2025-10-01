@@ -16,6 +16,23 @@ import {
 // Firebase インスタンスを再エクスポート（他のファイルからの互換性のため）
 export { app, auth, db };
 
+// 管理者権限チェック関数
+async function isAdmin(user = null) {
+  const currentUser = user || auth.currentUser;
+  if (!currentUser) return false;
+  
+  try {
+    const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+    if (!userDoc.exists()) return false;
+    
+    const userData = userDoc.data();
+    return userData.role === "admin";
+  } catch (error) {
+    console.error("管理者権限チェックエラー:", error);
+    return false;
+  }
+}
+
 // ====== DOM参照 ======
 const userInfo   = document.getElementById("user-info");
 const logoutBtn  = document.getElementById("logout-btn");
@@ -38,8 +55,12 @@ onAuthStateChanged(auth, async (user) => {
     try {
       const userDoc = await getDoc(doc(db, "users", user.uid));
       let nickname = "";
+      let isUserAdmin = false;
+      
       if (userDoc.exists()) {
-        nickname = userDoc.data().nickname || "";
+        const userData = userDoc.data();
+        nickname = userData.nickname || "";
+        isUserAdmin = userData.role === "admin";
       }
 
       if (userInfo) {
@@ -55,6 +76,19 @@ onAuthStateChanged(auth, async (user) => {
           : "ゲストさん";
         mobileUserInfo.style.display = "block";
       }
+      
+      // 管理者権限に応じて管理ページリンクを表示/非表示
+      const adminMenuDesktop = document.getElementById("admin-menu-desktop");
+      const adminMenuMobile = document.getElementById("admin-menu-mobile");
+      
+      if (isUserAdmin) {
+        if (adminMenuDesktop) adminMenuDesktop.style.display = "inline-block";
+        if (adminMenuMobile) adminMenuMobile.style.display = "block";
+      } else {
+        if (adminMenuDesktop) adminMenuDesktop.style.display = "none";
+        if (adminMenuMobile) adminMenuMobile.style.display = "none";
+      }
+      
     } catch (e) {
       console.error("ユーザープロフィール取得失敗", e);
       if (userInfo) {
@@ -64,6 +98,12 @@ onAuthStateChanged(auth, async (user) => {
         mobileUserInfo.textContent = "ゲストさん";
         mobileUserInfo.style.display = "block";
       }
+      
+      // エラー時は管理ページリンクを非表示
+      const adminMenuDesktop = document.getElementById("admin-menu-desktop");
+      const adminMenuMobile = document.getElementById("admin-menu-mobile");
+      if (adminMenuDesktop) adminMenuDesktop.style.display = "none";
+      if (adminMenuMobile) adminMenuMobile.style.display = "none";
     }
 
     if (logoutBtn) logoutBtn.style.display = "inline-block";
@@ -83,6 +123,12 @@ onAuthStateChanged(auth, async (user) => {
     if (mobileLogout) mobileLogout.style.display = "none";
     if (mobileLogin) mobileLogin.style.display = "block";
     if (mobileRegister) mobileRegister.style.display = "block";
+    
+    // 未ログイン時は管理ページリンクを非表示
+    const adminMenuDesktop = document.getElementById("admin-menu-desktop");
+    const adminMenuMobile = document.getElementById("admin-menu-mobile");
+    if (adminMenuDesktop) adminMenuDesktop.style.display = "none";
+    if (adminMenuMobile) adminMenuMobile.style.display = "none";
   }
 });
 
