@@ -10,7 +10,11 @@ import {
   getDocs,
   doc,
   deleteDoc,
-  getDoc
+  getDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+  increment
 } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
 import { createStoryCard } from "./story_card.js";
@@ -128,10 +132,141 @@ async function renderMyStories() {
   }
 }
 
+// お気に入りストーリー（花を贈ったストーリー）を表示
+async function renderFavoriteStories() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const favStoriesEl = document.getElementById("fav-stories");
+  if (!favStoriesEl) {
+    console.warn("#fav-stories が見つかりません");
+    return;
+  }
+  favStoriesEl.innerHTML = "<p style='text-align: center; color: #666;'>読み込み中...</p>";
+
+  try {
+    // 自分が花を贈ったストーリーを取得（bouquetUsersに自分のUIDが含まれている）
+    const q = query(
+      collection(db, "stories"),
+      where("bouquetUsers", "array-contains", user.uid),
+      where("status", "==", "published"), // 公開済みのもののみ
+      orderBy("timestamp", "desc")
+    );
+
+    const qs = await getDocs(q);
+    
+    if (qs.empty) {
+      favStoriesEl.innerHTML = `
+        <div style="text-align: center; padding: 2rem; color: #666; background: #f8f9fa; border-radius: 8px;">
+          <p>まだ花を贈ったストーリーはありません。</p>
+          <p><a href="index.php" style="color: #007bff;">ストーリーを読んでみる</a></p>
+        </div>
+      `;
+      return;
+    }
+
+    favStoriesEl.innerHTML = "";
+
+    for (const docSnap of qs.docs) {
+      const data = docSnap.data();
+      const nickname = await getNicknameByUid(data.uid);
+      
+      // お気に入り用のカードを作成（管理パネルなし）
+      const favCard = createFavoriteStoryCard(docSnap, nickname);
+      favStoriesEl.appendChild(favCard);
+    }
+
+  } catch (error) {
+    console.error("お気に入りストーリー取得エラー:", error);
+    favStoriesEl.innerHTML = `
+      <div style="text-align: center; padding: 2rem; color: #d73527;">
+        エラーが発生しました: ${error.message}
+      </div>
+    `;
+  }
+}
+
+// お気に入りストーリーカードを作成（読み取り専用）
+function createFavoriteStoryCard(docSnap, nickname) {
+  const data = docSnap.data();
+  const storyId = docSnap.id;
+  
+  // story_card.js の統一カードを使用（お気に入り用）
+  const storyCard = createStoryCard(docSnap, {
+    nickname: nickname,
+    bouquetCount: data.bouquets || 0,
+    currentUserUid: auth.currentUser?.uid,
+    reacted: true, // お気に入りなので必ず花を贈っている
+    isFavorite: true, // お気に入り表示用フラグ
+    onBouquet: async (storyId, userId) => {
+      // お気に入りページでも花の送信/取り消しを可能にする
+      const delta = await toggleBouquet(storyId, userId);
+      const countEl = document.getElementById(`bouquet-count-${storyId}`);
+      const btnEl = document.querySelector(`.bouquet-btn[data-id="${storyId}"]`);
+      if (countEl && btnEl) {
+        const current = parseInt(countEl.textContent || "0", 10);
+        const newCount = Math.max(0, current + delta);
+        countEl.textContent = String(newCount);
+        btnEl.textContent = newCount > 0 ? "🌸" : "🌱";
+        
+        // 花を取り消した場合はお気に入りから削除
+        if (delta < 0) {
+          storyCard.style.opacity = "0.5";
+          storyCard.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: #666;">
+              お気に入りから削除されました
+            </div>
+          `;
+          setTimeout(() => {
+            storyCard.remove();
+            // お気に入りが空になったかチェック
+            const remainingCards = document.querySelectorAll("#fav-stories .story-card");
+            if (remainingCards.length === 0) {
+              document.getElementById("fav-stories").innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: #666; background: #f8f9fa; border-radius: 8px;">
+                  <p>まだ花を贈ったストーリーはありません。</p>
+                  <p><a href="index.php" style="color: #007bff;">ストーリーを読んでみる</a></p>
+                </div>
+              `;
+            }
+          }, 1500);
+        }
+      }
+    }
+  });
+
+  return storyCard;
+}
+
+// 🌸トグル処理（mypage用にコピー）
+async function toggleBouquet(storyId, userId) {
+  const ref = doc(db, "stories", storyId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return 0;
+
+  const data = snap.data();
+  const reacted = (data.bouquetUsers || []).includes(userId);
+
+  if (reacted) {
+    await updateDoc(ref, {
+      bouquetUsers: arrayRemove(userId),
+      bouquets: increment(-1)
+    });
+    return -1;
+  } else {
+    await updateDoc(ref, {
+      bouquetUsers: arrayUnion(userId),
+      bouquets: increment(1)
+    });
+    return +1;
+  }
+}
+
 // 認証状態
 auth.onAuthStateChanged((user) => {
   if (user) {
     renderMyStories();
+    renderFavoriteStories(); // お気に入りも表示
   } else {
     window.location.href = "login.php";
   }
