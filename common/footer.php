@@ -136,8 +136,8 @@
 
 .footer-bottom {
     text-align: center;
-    margin-top: 10px;
-    padding-top: 10px;
+    margin-top: 5px;
+    padding-top: 5px;
 }
 
 .footer-bottom p {
@@ -148,7 +148,7 @@
 
 /* 追悼メッセージスタイル */
 .dedication {
-    padding: 0px 0px 10px 20px;
+    padding: 0px 0px 5px 20px;
     margin: 0 auto;
     max-width: 800px;
 }

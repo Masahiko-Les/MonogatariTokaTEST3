@@ -9,8 +9,8 @@
   <?php include 'common/header.php'; ?>
 
   <div class="hero">
-    <h1>あなたのストーリーが、誰かの力になる。</h1>
-    <p>つらい経験を言葉にして、優しいつながりをつくる場所。</p>
+    <h1>あなたのストーリーが、<span class="mobile-break">誰かの力になる。</span></h1>
+    <p>つらい経験を言葉にして、<span class="mobile-break">優しいつながりをつくる場所。</span></p>
   </div>
 
   <div class="stories">

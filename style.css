@@ -26,6 +26,11 @@ a {
   margin-bottom: 20px;
 }
 
+/* デスクトップでは改行なし */
+.mobile-break {
+  display: inline;
+}
+
 /* ===== ストーリー一覧 ===== */
 .stories h2 {
   text-align: left;
@@ -606,8 +611,9 @@ a {
   }
   
   /* デスクトップのメニューを非表示 */
-  .main-buttons {
-    display: none;
+  .main-buttons,
+  .desktop-menu {
+    display: none !important;
   }
   
   /* ヘッダートップの調整 */
@@ -688,6 +694,11 @@ a {
   .hero p {
     font-size: 1rem;
     line-height: 1.6;
+  }
+  
+  /* スマホでの改行制御 */
+  .mobile-break {
+    display: block;
   }
   
   /* ストーリーセクション */

@@ -26,7 +26,7 @@
   </div>
 
   <!-- 下段：メニュー -->
-  <div class="main-buttons">
+  <div class="main-buttons desktop-menu">
     <div class="menu-item has-dropdown">
       <a href="list.php" class="menu-link" aria-haspopup="true" aria-expanded="false">物語を読む</a>
         <div class="dropdown" role="menu">
