@@ -4,6 +4,9 @@ firebaseConfig.js
 # API設定ファイル（APIキーを含むため）
 API_config.php
 
+# セキュリティ設定ファイル
+.htaccess
+
 # Firestore ルールファイル（機密情報の可能性があるため）
 firestore_rules_updated.txt
 

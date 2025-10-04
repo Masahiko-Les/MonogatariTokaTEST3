@@ -16,7 +16,6 @@ function checkFirebaseConnection() {
     if (!auth || !db) {
       throw new Error("Firebase not initialized");
     }
-    console.log("Firebase connection OK");
     return true;
   } catch (error) {
     console.error("Firebase connection error:", error);
@@ -102,7 +101,6 @@ async function saveBackupToFirestore(storyData, userId) {
       backupId
     });
     
-    console.log('Story backed up to Firestore temp:', backupId);
     return backupId;
   } catch (error) {
     console.warn('Failed to backup to Firestore (service will continue):', error);
@@ -122,7 +120,6 @@ async function removeBackupFromFirestore(backupId) {
     }
     
     await deleteDoc(doc(db, "drafts_temp", backupId));
-    console.log('Backup removed from Firestore:', backupId);
   } catch (error) {
     console.warn('Failed to remove backup from Firestore (non-critical):', error);
     // バックアップ削除の失敗は処理を止めない
@@ -198,15 +195,6 @@ async function checkContentModeration(storyData) {
     
     const result = await response.json();
     
-    // デバッグ用ログ
-    console.log('Moderation result:', result);
-    console.log('Result keys:', Object.keys(result));
-    if (result.flaggedChunks) {
-      console.log('Flagged chunks:', result.flaggedChunks);
-    } else if (result.flagged_chunks) {
-      console.log('Flagged chunks (underscore):', result.flagged_chunks);
-    }
-    
     return result;
   } catch (error) {
     console.error('Moderation check failed:', error);
@@ -217,11 +205,6 @@ async function checkContentModeration(storyData) {
 
 // モデレーション警告モーダルを表示（チャンク対応版）
 function showModerationWarningModal(moderationResult, backupId) {
-  console.log('showModerationWarningModal called with:', moderationResult);
-  console.log('flaggedChunks:', moderationResult.flaggedChunks);
-  console.log('flagged_chunks:', moderationResult.flagged_chunks);
-  console.log('flaggedChunks length:', moderationResult.flaggedChunks ? moderationResult.flaggedChunks.length : 'undefined');
-  
   // 既存のモーダルを削除
   const existingModal = document.getElementById("moderation-modal");
   if (existingModal) {
@@ -249,12 +232,10 @@ function showModerationWarningModal(moderationResult, backupId) {
   const flaggedChunks = moderationResult.flaggedChunks || moderationResult.flagged_chunks;
   
   if (flaggedChunks && flaggedChunks.length > 0) {
-    console.log('Processing flagged chunks:', flaggedChunks);
     contentHTML += '<p>以下の箇所に問題が検出されました：</p>';
     contentHTML += '<div class="flagged-sections">';
     
     flaggedChunks.forEach((chunk, index) => {
-      console.log('Processing chunk:', chunk);
       contentHTML += `<div class="flagged-chunk">`;
       contentHTML += `<h4 class="section-title">${chunk.section}</h4>`;
       contentHTML += `<div class="flagged-text">"${chunk.text}"</div>`;
@@ -290,7 +271,6 @@ function showModerationWarningModal(moderationResult, backupId) {
   } 
   // 従来の形式（categories）の場合
   else if (moderationResult.categories) {
-    console.log('Using fallback categories format:', moderationResult.categories);
     const categories = moderationResult.categories;
     
     if (typeof categories === 'object') {
@@ -310,7 +290,6 @@ function showModerationWarningModal(moderationResult, backupId) {
   }
   // 完全にフォールバック
   else {
-    console.log('No specific format detected, using general message');
     contentHTML += '<p>投稿内容に不適切な要素が含まれている可能性があります。</p>';
   }
   
@@ -343,8 +322,6 @@ function showModerationWarningModal(moderationResult, backupId) {
 
 // 成功モーダルを表示する関数
 function showSuccessModal(type = "pending") {
-  console.log("showSuccessModal called with type:", type); // デバッグ用
-  
   // 既存のモーダルを削除（重複防止）
   const existingModal = document.getElementById("success-modal");
   if (existingModal) {
