@@ -1,5 +1,5 @@
 // post.js
-import { auth, db } from "./auth.js";
+import { auth, db } from "./firebaseConfig.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
 import {
   collection,
