@@ -492,19 +492,22 @@ a {
 }
 
 .success-modal-button {
-  background: #444;
+  padding: 12px 24px;
+  background-color: #4a4a4a;
   color: white;
   border: none;
-  padding: 0.8rem 2rem;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s;
-  font-weight: 500;
+  margin-top: 1rem;
+  display: inline-block;
+  min-width: 200px;
 }
 
 .success-modal-button:hover {
-  background: #333;
+  background-color: #3a3a3a;
 }
 
 /* 成功アイコン */

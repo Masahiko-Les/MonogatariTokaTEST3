@@ -126,7 +126,7 @@ function showSuccessModal(type) {
         <h3>${title}</h3>
         <p>${message}</p>
         <div class="success-actions">
-          <button onclick="closeSuccessModal('${type}')" class="success-btn">
+          <button onclick="closeSuccessModal('${type}')" class="success-modal-button">
             ${buttonText}
           </button>
         </div>
