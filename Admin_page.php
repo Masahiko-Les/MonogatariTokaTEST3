@@ -94,6 +94,62 @@ session_start();
       padding: 2rem;
       color: #666;
     }
+    
+    .ai-check-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    
+    .ai-check-btn:hover {
+      background: #0056b3;
+    }
+    
+    .ai-check-btn:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+    }
+    
+    .ai-result {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 4px;
+      border-left: 4px solid #007bff;
+      background: #f8f9fa;
+    }
+    
+    .ai-result.warning {
+      border-left-color: #ffc107;
+      background: #fff3cd;
+    }
+    
+    .ai-result.error {
+      border-left-color: #dc3545;
+      background: #f8d7da;
+    }
+    
+    .ai-result h4 {
+      margin: 0 0 0.5rem 0;
+      color: #333;
+    }
+    
+    .ai-result .detected-categories {
+      margin: 0.5rem 0;
+    }
+    
+    .ai-result .category-tag {
+      display: inline-block;
+      background: #dc3545;
+      color: white;
+      padding: 0.2rem 0.5rem;
+      border-radius: 3px;
+      font-size: 0.8rem;
+      margin: 0.2rem;
+    }
   </style>
 </head>
 <body>

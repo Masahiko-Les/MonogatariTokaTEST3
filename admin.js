@@ -1,6 +1,7 @@
 // admin.js - 管理者画面の機能
 import { auth, db } from "./firebaseConfig.js";
 import { isAdmin } from "./admin_utils.js";
+import { checkContentModeration, displayModerationResult } from "./AI_Moderation.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
 import {
   collection,
@@ -92,7 +93,13 @@ function createPendingStoryCard(storyId, data, nickname) {
     
     <div class="story-content">${buildStoryContent(data) || "内容なし"}</div>
     
+    <!-- AI判定結果表示エリア -->
+    <div id="ai-result-${storyId}" class="ai-result-container" style="display:none;margin:1rem 0;"></div>
+    
     <div class="admin-actions">
+      <button class="ai-check-btn" onclick="checkStoryWithAI('${storyId}')">
+        🤖 AI判定
+      </button>
       <button class="approve-btn" onclick="approveStory('${storyId}')">
         ✅ 承認して公開
       </button>
@@ -113,6 +120,60 @@ function buildStoryContent(data) {
   // フォールバック: 古いデータ形式対応
   return data.story || "";
 }
+
+// AI判定機能
+window.checkStoryWithAI = async function(storyId) {
+  const aiResultContainer = document.getElementById(`ai-result-${storyId}`);
+  const aiButton = document.querySelector(`button[onclick="checkStoryWithAI('${storyId}')"]`);
+  
+  if (!aiResultContainer) {
+    console.error('AI結果コンテナが見つかりません');
+    return;
+  }
+  
+  // ボタンを無効化してローディング表示
+  const originalButtonText = aiButton.textContent;
+  aiButton.disabled = true;
+  aiButton.textContent = "🤖 AI判定中...";
+  
+  try {
+    // Firestoreからストーリーデータを取得
+    const storyRef = doc(db, "stories", storyId);
+    const storySnap = await getDoc(storyRef);
+    
+    if (!storySnap.exists()) {
+      throw new Error("ストーリーが見つかりません");
+    }
+    
+    const storyData = storySnap.data();
+    
+    // AI判定実行
+    const moderationResult = await checkContentModeration({
+      title: storyData.title || "",
+      section1: storyData.section1 || "",
+      section2: storyData.section2 || "",
+      section3: storyData.section3 || ""
+    });
+    
+    // 結果を表示
+    aiResultContainer.style.display = "block";
+    displayModerationResult(moderationResult, `ai-result-${storyId}`);
+    
+  } catch (error) {
+    console.error('AI判定エラー:', error);
+    aiResultContainer.style.display = "block";
+    aiResultContainer.innerHTML = `
+      <div class="ai-result-error">
+        <h4>❌ AI判定エラー</h4>
+        <p>AI判定中にエラーが発生しました: ${error.message}</p>
+      </div>
+    `;
+  } finally {
+    // ボタンを復元
+    aiButton.disabled = false;
+    aiButton.textContent = originalButtonText;
+  }
+};
 
 // ストーリーを承認
 window.approveStory = async function(storyId) {

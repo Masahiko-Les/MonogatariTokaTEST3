@@ -4,10 +4,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.10/fi
 import {
   collection,
   addDoc,
-  serverTimestamp,
-  doc,
-  setDoc,
-  deleteDoc
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
 // Firebase接続チェック関数
@@ -44,30 +41,36 @@ function checkFirebaseConnection() {
   }
 }
 
-const MIN = 500;// 各セクションの最小文字数
-  [
-    { id: "section1", counter: "section1-counter" },
-    { id: "section2", counter: "section2-counter" },
-    { id: "section3", counter: "section3-counter" }
-  ].forEach(({ id, counter }) => {
-    const textarea = document.getElementById(id);
-    const counterDiv = document.getElementById(counter);
-    if (textarea && counterDiv) {
-      const updateCounter = () => {
-        const len = textarea.value.trim().length;
-        if (len < MIN) {
-          counterDiv.textContent = `あと${MIN - len}文字必要です`;
-          counterDiv.style.color = "#b00";
-        } else {
-          counterDiv.textContent = `入力済み：${len}文字`;
-          counterDiv.style.color = "#228b22";
-        }
-      };
-      textarea.addEventListener("input", updateCounter);
-      updateCounter(); // 初期表示
-    }
-  });
-function trim(s){ return (s ?? "").trim(); }
+const MIN = 500; // 各セクションの最小文字数
+
+// 文字数カウンター設定
+[
+  { id: "section1", counter: "section1-counter" },
+  { id: "section2", counter: "section2-counter" },
+  { id: "section3", counter: "section3-counter" }
+].forEach(({ id, counter }) => {
+  const textarea = document.getElementById(id);
+  const counterDiv = document.getElementById(counter);
+  if (textarea && counterDiv) {
+    const updateCounter = () => {
+      const len = textarea.value.trim().length;
+      if (len < MIN) {
+        counterDiv.textContent = `あと${MIN - len}文字必要です`;
+        counterDiv.style.color = "#b00";
+      } else {
+        counterDiv.textContent = `入力済み：${len}文字`;
+        counterDiv.style.color = "#228b22";
+      }
+    };
+    textarea.addEventListener("input", updateCounter);
+    updateCounter(); // 初期表示
+  }
+});
+
+function trim(s) { 
+  return (s ?? "").trim(); 
+}
+
 function validateSections(s1, s2, s3) {
   const errors = [];
   if (trim(s1).length < MIN) errors.push(`① は ${MIN}文字以上で入力してください（現在${trim(s1).length}文字）`);
@@ -82,318 +85,77 @@ function buildStory(s1, s2, s3) {
          `${trim(s3)}`;
 }
 
-// バックアップ機能（Firestoreのみ）- エラー処理強化版
-async function saveBackupToFirestore(storyData, userId) {
-  try {
-    const backupId = `temp_${userId}_${Date.now()}`;
-    
-    // Firestoreが利用できるかチェック
-    if (!db) {
-      console.warn('Firestore not available, skipping backup');
-      return null;
-    }
-    
-    await setDoc(doc(db, "drafts_temp", backupId), {
-      ...storyData,
-      status: "moderating",
-      createdAt: serverTimestamp(),
-      uid: userId,
-      backupId
-    });
-    
-    return backupId;
-  } catch (error) {
-    console.warn('Failed to backup to Firestore (service will continue):', error);
-    // エラーの詳細をログに記録するが、処理は継続
-    if (error.code === 'permission-denied') {
-      console.warn('Firestore permission denied - check security rules');
-    }
-    return null;
-  }
-}
-
-async function removeBackupFromFirestore(backupId) {
-  try {
-    if (!db || !backupId) {
-      console.warn('Firestore not available or no backup ID, skipping removal');
-      return;
-    }
-    
-    await deleteDoc(doc(db, "drafts_temp", backupId));
-  } catch (error) {
-    console.warn('Failed to remove backup from Firestore (non-critical):', error);
-    // バックアップ削除の失敗は処理を止めない
-  }
-}
-
-// テキストをチャンクに分割する関数
-function createTextChunks(storyData) {
-  const { title, section1, section2, section3 } = storyData;
-  const chunks = [];
+// 成功モーダルを表示
+function showSuccessModal(type) {
+  const modalId = 'success-modal';
   
-  // タイトルをチャンクに追加
-  if (title && title.trim()) {
-    chunks.push({
-      section: 'タイトル',
-      text: title.trim()
-    });
-  }
-  
-  // 各セクションを文単位で分割
-  const sections = [
-    { name: '第1章', text: section1 },
-    { name: '第2章', text: section2 },
-    { name: '第3章', text: section3 }
-  ];
-  
-  sections.forEach(section => {
-    if (section.text && section.text.trim()) {
-      // 文単位で分割（。や！、？で区切る）
-      const sentences = section.text.split(/(?<=[。！？])\s*/)
-        .filter(sentence => sentence.trim().length > 0)
-        .map(sentence => sentence.trim());
-      
-      if (sentences.length <= 1) {
-        // 短い場合はそのまま1つのチャンク
-        chunks.push({
-          section: section.name,
-          text: section.text.trim()
-        });
-      } else {
-        // 長い場合は文単位でチャンク分割
-        sentences.forEach((sentence, index) => {
-          if (sentence.trim()) {
-            chunks.push({
-              section: `${section.name} (${index + 1}文目)`,
-              text: sentence
-            });
-          }
-        });
-      }
-    }
-  });
-  
-  return chunks;
-}
-
-// モデレーションチェック関数（チャンク対応版）
-async function checkContentModeration(storyData) {
-  try {
-    const chunks = createTextChunks(storyData);
-    
-    const response = await fetch('moderation_check.php', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ chunks })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const result = await response.json();
-    
-    return result;
-  } catch (error) {
-    console.error('Moderation check failed:', error);
-    // エラーの場合は安全側に倒して通す（サービス継続性のため）
-    return { safe: true, flagged: false, error: error.message };
-  }
-}
-
-// モデレーション警告モーダルを表示（チャンク対応版）
-function showModerationWarningModal(moderationResult, backupId) {
-  // 既存のモーダルを削除
-  const existingModal = document.getElementById("moderation-modal");
+  // 既存のモーダルがあれば削除
+  const existingModal = document.getElementById(modalId);
   if (existingModal) {
     existingModal.remove();
   }
   
-  // カテゴリの日本語化
-  const categoryTranslations = {
-    'hate': 'ヘイトスピーチ',
-    'hate/threatening': '脅迫的なヘイトスピーチ',
-    'harassment': 'ハラスメント',
-    'harassment/threatening': '脅迫的なハラスメント',
-    'self-harm': '自傷行為',
-    'self-harm/intent': '自傷行為の意図',
-    'self-harm/instructions': '自傷行為の指示',
-    'sexual': '性的コンテンツ',
-    'sexual/minors': '未成年者への性的コンテンツ',
-    'violence': '暴力的コンテンツ',
-    'violence/graphic': 'グラフィックな暴力'
-  };
+  let title, message, buttonText;
   
-  let contentHTML = '';
-  
-  // チャンク単位の詳細情報がある場合（両方の命名規則に対応）
-  const flaggedChunks = moderationResult.flaggedChunks || moderationResult.flagged_chunks;
-  
-  if (flaggedChunks && flaggedChunks.length > 0) {
-    contentHTML += '<p>以下の箇所に問題が検出されました：</p>';
-    contentHTML += '<div class="flagged-sections">';
-    
-    flaggedChunks.forEach((chunk, index) => {
-      contentHTML += `<div class="flagged-chunk">`;
-      contentHTML += `<h4 class="section-title">${chunk.section}</h4>`;
-      contentHTML += `<div class="flagged-text">"${chunk.text}"</div>`;
-      
-      // categoriesはオブジェクト形式なので適切に処理
-      if (chunk.categories && typeof chunk.categories === 'object') {
-        const flaggedCategories = Object.entries(chunk.categories)
-          .filter(([_, flagged]) => flagged)
-          .map(([category, _]) => categoryTranslations[category] || category);
-          
-        if (flaggedCategories.length > 0) {
-          contentHTML += '<div class="violation-categories">';
-          contentHTML += '<strong>問題の種類：</strong> ';
-          contentHTML += flaggedCategories.join(', ');
-          contentHTML += '</div>';
-        }
-      }
-      // flagged_categoriesがある場合（PHPで追加した形式）
-      else if (chunk.flagged_categories && Array.isArray(chunk.flagged_categories)) {
-        if (chunk.flagged_categories.length > 0) {
-          contentHTML += '<div class="violation-categories">';
-          contentHTML += '<strong>問題の種類：</strong> ';
-          const categoryList = chunk.flagged_categories.map(cat => categoryTranslations[cat] || cat).join(', ');
-          contentHTML += categoryList;
-          contentHTML += '</div>';
-        }
-      }
-      
-      contentHTML += '</div>';
-    });
-    
-    contentHTML += '</div>';
-  } 
-  // 従来の形式（categories）の場合
-  else if (moderationResult.categories) {
-    const categories = moderationResult.categories;
-    
-    if (typeof categories === 'object') {
-      const flaggedCategories = Object.entries(categories)
-        .filter(([_, flagged]) => flagged)
-        .map(([category, _]) => categoryTranslations[category] || category);
-        
-      if (flaggedCategories.length > 0) {
-        contentHTML += '<p>投稿内容に以下のような要素が含まれている可能性があります：</p>';
-        contentHTML += '<ul>';
-        flaggedCategories.forEach(cat => {
-          contentHTML += `<li>${cat}</li>`;
-        });
-        contentHTML += '</ul>';
-      }
-    }
-  }
-  // 完全にフォールバック
-  else {
-    contentHTML += '<p>投稿内容に不適切な要素が含まれている可能性があります。</p>';
+  switch (type) {
+    case 'draft':
+      title = '下書き保存完了';
+      message = '作品が下書きとして保存されました。<br>マイページから続きを編集できます。';
+      buttonText = 'マイページへ';
+      break;
+    case 'pending':
+      title = '投稿完了';
+      message = '作品を投稿しました。<br>管理者による承認後に公開されます。';
+      buttonText = 'トップページへ';
+      break;
+    case 'published':
+      title = '公開完了';
+      message = '作品が公開されました。<br>多くの方に読んでもらいましょう！';
+      buttonText = 'トップページへ';
+      break;
+    default:
+      title = '投稿完了';
+      message = '作品の投稿が完了しました。';
+      buttonText = 'トップページへ';
   }
   
   const modalHTML = `
-    <div id="moderation-modal" class="moderation-modal show">
-      <div class="moderation-modal-content">
-        <div class="warning-icon">⚠️</div>
-        <h3>投稿内容について</h3>
-        ${contentHTML}
-        <p class="moderation-advice">内容を見直して、より適切な表現に修正していただけますでしょうか。</p>
-        <div class="moderation-buttons">
-          <button id="edit-content-btn" class="edit-button">内容を修正する</button>
+    <div id="${modalId}" class="success-modal show">
+      <div class="success-modal-content">
+        <div class="success-icon">✅</div>
+        <h3>${title}</h3>
+        <p>${message}</p>
+        <div class="success-actions">
+          <button onclick="closeSuccessModal('${type}')" class="success-btn">
+            ${buttonText}
+          </button>
         </div>
       </div>
     </div>
   `;
   
   document.body.insertAdjacentHTML('beforeend', modalHTML);
-  
-  // イベントリスナー設定
-  const editBtn = document.getElementById("edit-content-btn");
-  
-  if (editBtn) {
-    editBtn.addEventListener("click", () => {
-      document.getElementById("moderation-modal").remove();
-      // フォームに戻る（何もしない）
-    });
-  }
 }
 
-// 成功モーダルを表示する関数
-function showSuccessModal(type = "pending") {
-  // 既存のモーダルを削除（重複防止）
-  const existingModal = document.getElementById("success-modal");
-  if (existingModal) {
-    existingModal.remove();
-  }
-  
-  // メッセージをタイプに応じて変更
-  let title, message, buttonText;
-  if (type === "pending") {
-    title = "投稿しました！";
-    message = "あなたのストーリーを受け付けました。<br>管理者による確認後、サイトに公開されます。";
-    buttonText = "マイページへ";
-  } else if (type === "draft") {
-    title = "下書き保存しました！";
-    message = "あなたのストーリーを下書きとして保存しました。<br>マイページで確認・編集できます。";
-    buttonText = "マイページへ";
-  } else {
-    title = "公開しました！";
-    message = "あなたのストーリーが正常に公開されました。<br>トップページでご確認いただけます。";
-    buttonText = "トップページへ";
-  }
-  
-  // モーダルHTMLを動的に作成
-  const modalHTML = `
-    <div id="success-modal" class="success-modal show">
-      <div class="success-modal-content">
-        <div class="success-icon">✅</div>
-        <h3>${title}</h3>
-        <p>${message}</p>
-        <button id="success-modal-button" class="success-modal-button">
-          ${buttonText}
-        </button>
-      </div>
-    </div>
-  `;
-  
-  // bodyに追加
-  document.body.insertAdjacentHTML('beforeend', modalHTML);
-  
-  // イベントリスナーを設定
-  const modal = document.getElementById("success-modal");
-  const button = document.getElementById("success-modal-button");
-  
-  // 遷移先を決定
-  const redirectUrl = (type === "draft" || type === "pending") ? "mypage.php" : "index.php";
-  
-  if (button) {
-    button.addEventListener("click", () => {
-      window.location.href = redirectUrl;
-    });
-  }
-  
-  // モーダル背景クリックで閉じる
+// 成功モーダルを閉じる
+window.closeSuccessModal = function(type) {
+  const modal = document.getElementById('success-modal');
   if (modal) {
-    modal.addEventListener("click", (e) => {
-      if (e.target === modal) {
-        window.location.href = redirectUrl;
-      }
-    });
+    modal.remove();
   }
   
-  console.log("Modal created and displayed"); // デバッグ用
-}
-
-async function saveStory({status}) {
-  // Firebase接続チェック
-  if (!checkFirebaseConnection()) {
-    return;
+  // リダイレクト
+  if (type === 'draft') {
+    window.location.href = 'mypage.php';
+  } else {
+    window.location.href = 'index.php';
   }
+};
 
-  const genre    = document.getElementById("genre")?.value || "";
+// 物語保存関数
+async function saveStory({ status }) {
   const title    = trim(document.getElementById("title")?.value);
+  const genre    = document.getElementById("genre")?.value || "";
   const section1 = trim(document.getElementById("section1")?.value);
   const section2 = trim(document.getElementById("section2")?.value);
   const section3 = trim(document.getElementById("section3")?.value);
@@ -409,7 +171,7 @@ async function saveStory({status}) {
   if (!user) { alert("ログインしてください。"); return; }
 
   try {
-    // 直接Firestoreに保存（AIチェックは確認ボタンで済み）
+    // Firestoreに直接保存
     await addDoc(collection(db, "stories"), {
       uid: user.uid,
       title,
@@ -493,9 +255,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 確認（プレビューを表示 + AIチェック）
+  // 確認（プレビューを表示）
   if (previewBtn) {
-    previewBtn.addEventListener("click", async () => {
+    previewBtn.addEventListener("click", () => {
       statusEl.textContent = "";
 
       const title    = trim(document.getElementById("title")?.value);
@@ -513,74 +275,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const user = auth.currentUser;
       if (!user) { alert("ログインしてください。"); return; }
 
-      const storyData = {
-        genre,
-        title,
-        section1,
-        section2,
-        section3
-      };
+      // プレビューを表示
+      const assembled = `【ジャンル】${genre}\n【タイトル】${title}\n\n` + buildStory(section1, section2, section3);
+      previewContent.textContent = assembled;
+      previewArea.style.display = "block";
+      window.scrollTo({ top: previewArea.offsetTop - 20, behavior: "smooth" });
 
-      // Firestoreにバックアップを保存
-      // バックアップ保存（エラーでも続行）
-      let backupId = null;
-      try {
-        backupId = await saveBackupToFirestore(storyData, user.uid);
-      } catch (error) {
-        console.error('Backup failed, but continuing with moderation:', error);
-      }
-
-      // 確認ボタンを無効化してローディング表示
-      const originalPreviewText = previewBtn.textContent;
-      previewBtn.disabled = true;
-      previewBtn.textContent = "AIが内容をチェック中...";
-
-      statusEl.style.color = "#666";
-      statusEl.textContent = "AIがコンテンツの安全性をチェックしています...";
-
-      try {
-        // AIモデレーションチェック
-        const moderationResult = await checkContentModeration(storyData);
-        
-        if (!moderationResult.safe && moderationResult.flagged) {
-          // 有害コンテンツが検出された場合
-          showModerationWarningModal(moderationResult, backupId);
-          statusEl.style.color = "red";
-          statusEl.textContent = "投稿内容を確認してください。修正後に再度お試しください。";
-          
-          // ボタンを復元
-          previewBtn.disabled = false;
-          previewBtn.textContent = originalPreviewText;
-          return;
-        }
-
-        // AIチェック通過：プレビューを表示
-        const assembled = `【ジャンル】${genre}\n【タイトル】${title}\n\n` + buildStory(section1, section2, section3);
-        previewContent.textContent = assembled;
-        previewArea.style.display = "block";
-        window.scrollTo({ top: previewArea.offsetTop - 20, behavior: "smooth" });
-
-        statusEl.style.color = "green";
-        statusEl.textContent = "AIチェック完了。内容を確認して投稿してください。";
-
-        // ボタンを復元
-        previewBtn.disabled = false;
-        previewBtn.textContent = originalPreviewText;
-
-        // バックアップを削除（チェック成功時）
-        if (backupId) {
-          await removeBackupFromFirestore(backupId);
-        }
-
-      } catch (error) {
-        console.error("AIチェックエラー:", error);
-        statusEl.style.color = "red";
-        statusEl.textContent = "AIチェックでエラーが発生しました。再度お試しください。";
-        
-        // ボタンを復元
-        previewBtn.disabled = false;
-        previewBtn.textContent = originalPreviewText;
-      }
+      statusEl.style.color = "green";
+      statusEl.textContent = "内容を確認して投稿してください。";
     });
   }
 
@@ -594,7 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // プレビュー → 公開する
   if (publishBtn) {
     publishBtn.addEventListener("click", async () => {
-      await saveStory({ status: "pending" }); // published → pending に変更
+      await saveStory({ status: "pending" });
     });
   }
 
