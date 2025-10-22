@@ -35,6 +35,7 @@
           <a href="list.php?category=うつ" class="dropdown-link">うつ</a>
           <a href="list.php?category=いじめ" class="dropdown-link">いじめ</a>
           <a href="list.php?category=障害児の子育て" class="dropdown-link">障害児の子育て</a>
+          <a href="list.php?category=摂食障害" class="dropdown-link">摂食障害</a>
         </div>
     </div>
 
@@ -65,6 +66,7 @@
       <a href="list.php?category=吃音" class="mobile-submenu-item">吃音</a>
       <a href="list.php?category=うつ" class="mobile-submenu-item">うつ</a>
       <a href="list.php?category=いじめ" class="mobile-submenu-item">いじめ</a>
+      <a href="list.php?category=摂食障害" class="mobile-submenu-item">摂食障害</a>
       <a href="list.php?category=障害児の子育て" class="mobile-submenu-item">障害児の子育て</a>
     </div>
     <a href="post.php" class="mobile-menu-item">物語を書く</a>

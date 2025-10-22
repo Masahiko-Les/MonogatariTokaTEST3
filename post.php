@@ -55,6 +55,7 @@ session_start();
           <option value="うつ">うつ</option>
           <option value="吃音">吃音</option>
           <option value="いじめ">いじめ</option>
+          <option value="摂食障害">摂食障害</option>
           <option value="障害児の子育て">障害児の子育て</option>
         </select>
       </div>

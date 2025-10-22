@@ -11,6 +11,7 @@
                 <li><a href="list.php?category=うつ">うつ</a></li>
                 <li><a href="list.php?category=いじめ">いじめ</a></li>
                 <li><a href="list.php?category=障害児の子育て">障害児の子育て</a></li>
+                <li><a href="list.php?category=摂食障害">摂食障害</a></li>
             </ul>
         </div>
         
